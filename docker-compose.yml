@@ -1,0 +1,9 @@
+services:
+  pawload:
+    build: .
+    restart: unless-stopped
+    container_name: pawload
+    ports:
+      - "9002:80"
+    environment:
+      COBALT_API_URL: "https://your-cobalt-instance.example.com"
