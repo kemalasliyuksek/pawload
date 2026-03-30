@@ -1,6 +1,6 @@
 services:
   pawload:
-    build: .
+    image: ghcr.io/kemalasliyuksek/pawload:latest
     restart: unless-stopped
     container_name: pawload
     ports:
