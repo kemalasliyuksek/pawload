@@ -1,0 +1,59 @@
+server {
+    listen 80;
+    server_name _;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # Hide nginx version
+    server_tokens off;
+
+    # Security headers
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "no-referrer" always;
+    add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' https:; media-src https:; connect-src 'self'; frame-ancestors 'self'" always;
+
+    # Gzip
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml;
+    gzip_min_length 256;
+
+    # Cache static assets
+    location ~* \.(css|js|woff2)$ {
+        expires 7d;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # Cache images
+    location ~* \.(webp|png|ico)$ {
+        expires 30d;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # Block hidden files
+    location ~ /\. {
+        deny all;
+        return 404;
+    }
+
+    # Resolve upstream via IPv4 only
+    resolver 1.1.1.1 8.8.8.8 ipv6=off valid=300s;
+    resolver_timeout 5s;
+
+    # API reverse proxy (hides backend URL from client)
+    location = /api {
+        proxy_pass ${COBALT_API_URL}/;
+        proxy_ssl_server_name on;
+        proxy_set_header Host $proxy_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header Accept "application/json";
+        proxy_set_header Content-Type "application/json";
+        proxy_buffering off;
+    }
+
+    # SPA fallback
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
