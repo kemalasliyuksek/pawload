@@ -15,4 +15,4 @@ COPY mascot.json /usr/share/nginx/html/
 RUN chown -R nginx:nginx /usr/share/nginx/html
 
 HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
-  CMD wget -qO- http://localhost:80/ || exit 1
+  CMD wget -qO- http://127.0.0.1:80/ || exit 1
